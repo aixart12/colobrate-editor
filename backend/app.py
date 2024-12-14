@@ -1,6 +1,7 @@
 from flask import  jsonify
 from init import app, db
-from auth import token_required, login, signup
+from auth import token_required, login, signup 
+from team_invite import invite_user , accept_invite
 from models import User
 
 
@@ -21,6 +22,17 @@ def log_in():
 def sing_up():
     return signup()
 
+
+# Invite route
+@app.route('/invite', methods=['POST'])
+@token_required
+def invite(current_user):
+    return invite_user(current_user)
+
+# Accept invite route
+@app.route('/accept-invite/<token>', methods=['GET'])
+def accept_invite_route(token):
+    return accept_invite(token)
 
 if __name__ == "__main__":
     app.run(debug=True)

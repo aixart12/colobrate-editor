@@ -44,15 +44,25 @@ def login():
     return make_response('Wrong password!', 403, {'WWW-Authenticate': 'Basic realm="Wrong password!"'})
 
 
+# Signup function
 def signup():
     data = request.json
-    name, email, password = data.get('name'), data.get('email'), data.get('password')
+    name, email = data.get('name'), data.get('email')
+    password = data.get('password')
 
-    if User.query.filter_by(email=email).first():
-        return make_response('User already exists. Please log in.', 202)
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        team_id = str(uuid.uuid4())  # Generate unique team_id
+        user = User(
+            public_id=str(uuid.uuid4()),
+            name=name,
+            email=email,
+            password=generate_password_hash(password),
+            team_id=team_id  # Assign the generated team_id
+        )
+        db.session.add(user)
+        db.session.commit()
 
-    new_user = User(public_id=str(uuid.uuid4()), name=name, email=email, password=generate_password_hash(password))
-    db.session.add(new_user)
-    db.session.commit()
-
-    return make_response('Successfully registered.', 201)
+        return jsonify({'message': 'Successfully registered.'}), 201
+    else:
+        return jsonify({'message': 'User already exists. Please log in.'}), 202
