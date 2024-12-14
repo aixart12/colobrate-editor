@@ -1,7 +1,8 @@
-from flask import  jsonify
+from flask import  jsonify , request
 from init import app, db
 from auth import token_required, login, signup 
 from team_invite import invite_user , accept_invite
+from scrape import scrape_and_save_data , get_scraped_data
 from models import User
 
 
@@ -23,16 +24,25 @@ def sing_up():
     return signup()
 
 
-# Invite route
 @app.route('/api/invite', methods=['POST'])
 @token_required
 def invite(current_user):
     return invite_user(current_user)
 
-# Accept invite route
 @app.route('/api/accept-invite', methods=['POST'])
 def accept_invite_route():
     return accept_invite()
+
+@app.route('/api/scrape/save', methods=['POST'])
+@token_required
+def scape_and_save_route(current_user):
+    return scrape_and_save_data(current_user)
+
+
+@app.route('/api/scrape/get', methods=['GET'])
+@token_required
+def get_scraped_data_route(current_user):
+    return get_scraped_data(current_user)
 
 if __name__ == "__main__":
     app.run(debug=True)

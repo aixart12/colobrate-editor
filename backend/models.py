@@ -1,4 +1,5 @@
 from init import db
+from datetime import datetime
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -21,3 +22,13 @@ class Invite(db.Model):
 
     def __repr__(self):
         return f'<Invite {self.email}>'
+    
+class ScrapedData(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.String(36), nullable=False)  # Associate data with a team
+    url = db.Column(db.String(500), nullable=False)     # URL of the scraped website
+    content = db.Column(db.Text, nullable=False)        # Store the scraped content
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<ScrapedData {self.url}>'
