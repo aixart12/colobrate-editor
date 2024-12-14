@@ -1,18 +1,24 @@
-import { Inter } from "next/font/google";
-import Tiptap from "@/components/Tiptap/Tiptap";
-import TreeView from "@/components/TreeView/TreeView";
-import LoginForm from "@/components/LoginForm/LoginForm";
-
-const inter = Inter({ subsets: ["latin"] });
+"use client";
+import PrivateLayout from "@/layout/PrivateLayout";
+import { useEffect, useState } from "react";
+import Workspace from "./workspace";
+import PublicLayout from "@/layout/PublicLayout";
+import { hasToken } from "@/utils";
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(hasToken()); // Runs only on the client
+  }, []);
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <TreeView />
-      <Tiptap />
-      {/* <LoginForm /> */}
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      {isAuthenticated ? (
+        <PrivateLayout children={<Workspace />} />
+      ) : (
+        <PublicLayout />
+      )}
     </main>
   );
 }

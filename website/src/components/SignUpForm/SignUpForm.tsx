@@ -1,10 +1,16 @@
+"use client";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { createUser } from "@/service/auth";
+
+import { useRouter } from "next/router";
+import { setAccessToken } from "@/utils";
 
 // Validation schema
 const schema = yup.object().shape({
+  name: yup.string().required("Name is required"),
   email: yup.string().email("Invalid email").required("Email is required"),
   password: yup
     .string()
@@ -20,6 +26,7 @@ const schema = yup.object().shape({
 });
 
 const SignUpForm = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -28,8 +35,18 @@ const SignUpForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log("Form Data:", data);
+    try {
+      const { name, email, password } = data;
+      const token = await createUser({ name, email, password });
+
+      setAccessToken(token);
+      router.push("/workspace");
+    } catch (error) {
+      alert("Failed to create account. Please try again.");
+      console.error(error);
+    }
   };
 
   return (
@@ -37,6 +54,20 @@ const SignUpForm = () => {
       <div className="max-w-md w-full mx-auto border border-gray-300 rounded-2xl p-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-6">
+            <div>
+              <label className="text-gray-800 text-sm mb-2 block">Name</label>
+              <input
+                {...register("name")}
+                type="text"
+                className="text-gray-800 bg-white border border-gray-300 w-full text-sm px-4 py-3 rounded-md outline-blue-500"
+                placeholder="Enter name"
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
             <div>
               <label className="text-gray-800 text-sm mb-2 block">
                 Email Id
@@ -98,7 +129,7 @@ const SignUpForm = () => {
               >
                 I accept the
                 <a
-                  href="javascript:void(0);"
+                  href="#"
                   className="text-blue-600 font-semibold hover:underline ml-1"
                 >
                   Terms and Conditions

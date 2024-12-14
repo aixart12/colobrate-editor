@@ -62,8 +62,15 @@ def invite_user(current_user):
 
 
 # Accept invite function
-def accept_invite(token):
+def accept_invite():
     try : 
+        data = request.get_json()
+        if not data or 'token' not in data:
+            return jsonify({'message': 'Email is required'}), 400
+        
+        token = data['token']  
+        name  = data['name']
+
         invite = Invite.query.filter_by(token=token).first()
         if not invite:
             return jsonify({'message': 'Invalid invite token'}), 400
@@ -84,6 +91,7 @@ def accept_invite(token):
         new_user = User(
             public_id=str(uuid.uuid4()),
             email=invite.email,
+            name=name,
             team_id=invite.team_id,  # Assign the same team_id as the inviter
             password=generate_password_hash("password123")  # Default password
         )

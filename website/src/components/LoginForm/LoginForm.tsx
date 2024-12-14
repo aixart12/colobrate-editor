@@ -2,6 +2,9 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { setAccessToken } from "@/utils";
+import { useRouter } from "next/router";
+import { loginUser } from "@/service/auth";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -13,6 +16,7 @@ const schema = yup.object().shape({
 });
 
 const LoginForm = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -21,8 +25,20 @@ const LoginForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log("Form Data:", data);
+    try {
+      const { name, email, password } = data;
+      const token = await loginUser({ email, password });
+
+      console.log("token ,", token);
+
+      setAccessToken(token.token);
+      router.push("/workspace");
+    } catch (error) {
+      alert("Failed to create account. Please try again.");
+      console.error(error);
+    }
   };
 
   return (

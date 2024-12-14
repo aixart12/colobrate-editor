@@ -1,4 +1,7 @@
+import { loginUser } from "@/service/auth";
+import { inviteTeamMember } from "@/service/team-invite";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter } from "next/router";
 import React from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -9,6 +12,7 @@ const schema = yup.object().shape({
 });
 
 const TeamInviteForm = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -17,8 +21,16 @@ const TeamInviteForm = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     console.log("Form Data:", data);
+    try {
+      const { email } = data;
+      await inviteTeamMember({ email }); // Call the API
+      alert("Account created successfully!"); // Show success message
+    } catch (error) {
+      alert("Failed to create account. Please try again."); // Handle errors
+      console.error(error);
+    }
   };
 
   return (
