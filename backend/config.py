@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+import redis
 import os
 
 # Load environment variables from .env file
@@ -17,7 +18,12 @@ class Config(object):
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_USE_TLS = True  
     MAIL_USE_SSL = False   
-        
+
+    SESSION_TYPE = 'redis'
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = 'flask_session:'
+    SESSION_REDIS = redis.StrictRedis(host=os.getenv('HOST'), port=6379, db=0)
 
 
 app_config = Config
