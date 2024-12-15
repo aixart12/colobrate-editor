@@ -1,85 +1,78 @@
 "use client";
 
-import { updateScrapedDataByID } from "@/service/scrape";
+import socket from "@/shared/socket";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { FunctionComponent, useEffect, useState, useCallback } from "react";
-import { debounce } from "lodash"; // To debounce the auto-save
-import { toast } from "react-toastify"; // Import toast
+import { FunctionComponent, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const Tiptap: FunctionComponent<{
   content?: string;
   contentId: number | null;
 }> = ({ content = "", contentId }) => {
-  const [autoSaveInterval, setAutoSaveInterval] =
-    useState<NodeJS.Timeout | null>(null);
   const [isSaving, setIsSaving] = useState(false); // Track saving state
-
-  // Function to simulate auto-saving
-  const autoSaveContent = useCallback(
-    async (content: string) => {
-      if (contentId) {
-        setIsSaving(true); // Start showing saving indicator
-        try {
-          console.log("Auto-saving content:", content);
-          await updateScrapedDataByID(contentId, { content: content });
-          // Show success toast after saving
-          toast.success("Content saved successfully!");
-        } catch (error) {
-          console.error("Auto-save failed:", error);
-          // Show error toast if save fails
-          toast.error("Failed to save content.");
-        } finally {
-          setIsSaving(false); // Stop showing saving indicator after save is complete
-        }
-      }
-    },
-    [contentId]
-  );
-
-  // Debounced version of auto-save function to avoid immediate calls
-  const debouncedAutoSave = useCallback(
-    debounce((content: string) => autoSaveContent(content), 1000),
-    [autoSaveContent]
-  );
-
   const editor = useEditor({
     extensions: [StarterKit],
     content: content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      // Ensures that the editor content is updated and available for auto-save
-      const currentContent = editor.getHTML();
-      debouncedAutoSave(currentContent); // Use debounced auto-save on every update
+      const updatedContent = editor.getHTML();
+
+      // Emit content changes to the server and show the saving indicator
+      if (contentId) {
+        setIsSaving(true); // Show "Saving..." indicator
+        socket.emit("edit_content", { contentId, content: updatedContent });
+
+        // Simulate a delay to ensure the indicator is visible
+        setTimeout(() => {
+          setIsSaving(false); // Hide the "Saving..." indicator after emitting
+        }, 1000);
+      }
     },
   });
 
   useEffect(() => {
-    if (editor) {
-      // This effect should only set the initial content when `content` prop changes.
-      if (content !== editor.getHTML()) {
-        editor.commands.setContent(content); // Update the editor content when the prop changes
-      }
+    if (contentId) {
+      // Connect to the socket server when the component is mounted
+      if (!socket.connected) socket.connect();
+
+      // Join a room for the specific content
+      socket.emit("join_room", { contentId });
+
+      // Listen for real-time content updates
+      socket.on("content_update", (data) => {
+        if (editor && data.content !== editor.getHTML()) {
+          editor.commands.setContent(data.content); // Update editor content in real-time
+        }
+      });
+
+      // Notify when a user joins or leaves
+      socket.on("user_joined", (data) => toast.info(data.msg));
+      socket.on("user_left", (data) => toast.warning(data.msg));
+
+      // Cleanup on component unmount
+      return () => {
+        socket.emit("leave_room", { contentId });
+        socket.off("content_update");
+        socket.off("user_joined");
+        socket.off("user_left");
+      };
+    }
+  }, [contentId, editor]);
+
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content); // Sync initial content
     }
   }, [content, editor]);
 
-  useEffect(() => {
-    if (editor && autoSaveInterval === null) {
-      // Set auto-save interval (e.g., every 5 seconds) only once when the editor is initialized
-      const interval = setInterval(() => {
-        const currentContent = editor.getHTML();
-        debouncedAutoSave(currentContent); // Call auto-save function
-      }, 5000);
-
-      setAutoSaveInterval(interval);
-
-      // Cleanup on component unmount
-      return () => clearInterval(interval);
-    }
-  }, [editor, autoSaveInterval, debouncedAutoSave]); // Only run this effect once when the editor is initialized
-
   return (
     <div>
+      <div style={{ marginTop: "10px", fontSize: "14px", color: "gray" }}>
+        {isSaving ? "Saving..." : "All changes saved."}
+      </div>
       <EditorContent editor={editor} />
+      {/* Auto-Save Indicator */}
     </div>
   );
 };

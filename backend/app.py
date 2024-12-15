@@ -1,9 +1,11 @@
 from flask import  jsonify , request
-from init import app
+from init import app, db ,socketio
+from flask_socketio import emit, join_room, leave_room
 from auth import token_required, login, signup 
 from team_invite import invite_user , accept_invite
 from scrape import scrape_and_save_data , get_scraped_data , get_scraped_data_by_id , update_scraped_data_by_id
-from models import User
+from models import User , ScrapedData
+
 
 
 @app.route('/api/user', methods=['GET'])
@@ -54,6 +56,33 @@ def get_scraped_data_by_id_route(current_user  , scraped_data_id):
 @token_required
 def update_scraped_data_route(current_user , scraped_data_id):
     return update_scraped_data_by_id(current_user, scraped_data_id)
+
+@socketio.on('join_room')
+def handle_join_room(data):
+    room = data.get('contentId')
+    join_room(room)
+    emit('user_joined', {'msg': 'A new user has joined the room'}, to=room)
+
+@socketio.on('edit_content')
+def handle_edit_content(data):
+    content_id = data.get('contentId')
+    content = data.get('content')
+
+    # Broadcast the updated content to everyone in the room except sender
+    emit('content_update', {'content': content}, to=content_id, skip_sid=request.sid)
+
+    # Save the content to the database (auto-save)
+    if content_id:
+        scraped_data = ScrapedData.query.filter_by(id=content_id).first()
+        if scraped_data:
+            scraped_data.content = content
+            db.session.commit()
+
+@socketio.on('leave_room')
+def handle_leave_room(data):
+    room = data.get('contentId')
+    leave_room(room)
+    emit('user_left', {'msg': 'A user has left the room'}, to=room)
 
 if __name__ == "__main__":
     app.run(debug=True)
