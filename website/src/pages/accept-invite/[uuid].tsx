@@ -13,15 +13,9 @@ const schema = yup.object().shape({
 });
 
 const AcceptInvite = () => {
-  const { uuid } = useParams() || {}; // Use an empty object fallback
   const router = useRouter();
-
-  if (!uuid) {
-    console.error(
-      "UUID is not available. Make sure this page is accessed correctly."
-    );
-    return <div>Error: Invalid invite link.</div>;
-  }
+  const { uuid } = router.query;
+  console.log("uuis in the accepit invite", uuid);
 
   const {
     register,
@@ -35,18 +29,18 @@ const AcceptInvite = () => {
     console.log("Form Data:", data);
     try {
       const { name } = data;
+      //    const token = await createUser({ name, email, password });
       await accpetInvite({
         token: uuid as string,
-        name,
+        name: name,
       });
-      toast.success("Account Created Successfully");
+      toast.success("Account Created Sucessfully");
       router.push("/login");
     } catch (error) {
       toast.error("Failed to create account. Please try again.");
       console.error(error);
     }
   };
-
   return (
     <div className="flex flex-col justify-center font-[sans-serif] sm:h-screen p-4">
       <div className="max-w-md w-full mx-auto border border-gray-300 rounded-2xl p-8">
