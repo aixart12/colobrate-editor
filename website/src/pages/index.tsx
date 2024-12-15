@@ -1,5 +1,4 @@
 "use client";
-import PrivateLayout from "@/layout/PrivateLayout";
 import { useEffect, useState } from "react";
 import Workspace from "./workspace";
 import PublicLayout from "@/layout/PublicLayout";
@@ -14,11 +13,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      {isAuthenticated ? (
-        <PrivateLayout children={<Workspace />} />
-      ) : (
-        <PublicLayout />
-      )}
+      {isAuthenticated ? <Workspace /> : <PublicLayout />}
     </main>
   );
 }

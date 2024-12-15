@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { setAccessToken } from "@/utils";
 import { useRouter } from "next/router";
 import { loginUser } from "@/service/auth";
+import Link from "next/link";
 
 // Validation schema
 const schema = yup.object().shape({
@@ -90,12 +91,12 @@ const LoginForm = () => {
           </div>
           <p className="text-gray-800 text-sm mt-6 text-center">
             Already have an account?{" "}
-            <a
+            <Link
               href="/sign-up"
               className="text-blue-600 font-semibold hover:underline ml-1"
             >
               SignUp here
-            </a>
+            </Link>
           </p>
         </form>
       </div>

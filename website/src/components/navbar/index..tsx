@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React, { useState } from "react";
 
 const Navbar = () => {
@@ -8,19 +9,19 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <a href="/" className="text-xl font-bold text-white">
+            <Link href="/" className="text-xl font-bold text-white">
               {/* MyBrand */}
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-6">
-            <a href="/workspace" className="hover:text-gray-600">
+            <Link href="/workspace" className="hover:text-gray-600">
               WorkSpace
-            </a>
-            <a href="/team-invite" className="hover:text-gray-600">
+            </Link>
+            <Link href="/team-invite" className="hover:text-gray-600">
               Invite Team
-            </a>
+            </Link>
           </div>
         </div>
       </div>

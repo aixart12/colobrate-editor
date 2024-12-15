@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from config import app_config
 from flask_socketio import SocketIO
 from flask_session import Session
-import redis
+import redis , os
 
 
 # Initialize Flask app and SQLAlchemy
@@ -20,4 +20,4 @@ mail = Mail(app)
 # Initialize session
 Session(app)
 
-cache = redis.StrictRedis(host='localhost', port=6379, db=0)
+cache = redis.StrictRedis(host=os.getenv('HOST'), port=6379, db=0)
