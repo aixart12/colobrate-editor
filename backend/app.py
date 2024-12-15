@@ -1,8 +1,8 @@
 from flask import  jsonify , request
-from init import app, db
+from init import app
 from auth import token_required, login, signup 
 from team_invite import invite_user , accept_invite
-from scrape import scrape_and_save_data , get_scraped_data
+from scrape import scrape_and_save_data , get_scraped_data , get_scraped_data_by_id , update_scraped_data_by_id
 from models import User
 
 
@@ -43,6 +43,16 @@ def scape_and_save_route(current_user):
 @token_required
 def get_scraped_data_route(current_user):
     return get_scraped_data(current_user)
+
+@app.route('/api/scraped-data/<int:scraped_data_id>', methods=['GET'])
+@token_required
+def get_scraped_data_by_id_route(current_user  , scraped_data_id):
+    return get_scraped_data_by_id(current_user, scraped_data_id)
+
+
+@app.route('/api/scraped-data/<int:scraped_data_id>', methods=['PUT'])
+def update_scraped_data_route(current_user , scraped_data_id):
+    return update_scraped_data_by_id(current_user, scraped_data_id)
 
 if __name__ == "__main__":
     app.run(debug=True)

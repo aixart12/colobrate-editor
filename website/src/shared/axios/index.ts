@@ -50,7 +50,9 @@ axiosInstance.interceptors.response.use(
 
         // Redirect to login after a short delay
         setTimeout(() => {
-          window.location.reload();
+          if (typeof window !== "undefined") {
+            window.location.href = "/";
+          }
           isLoggingOut = false; // Reset flag after redirect
         }, 500);
       }

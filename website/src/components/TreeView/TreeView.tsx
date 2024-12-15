@@ -1,59 +1,66 @@
-import { TreeNode } from '@/shared/type';
-import React, { useState } from 'react'
-import { renderTree } from './renderTree';
+import { TreeNode } from "@/shared/type";
+import React, {
+  Dispatch,
+  FunctionComponent,
+  SetStateAction,
+  useState,
+} from "react";
+import { renderTree } from "./renderTree";
+import { useRouter } from "next/router";
+const TreeView: FunctionComponent<{
+  treeViewData: TreeNode;
+  setSelectedContentId: Dispatch<SetStateAction<number | null>>;
+}> = ({ treeViewData, setSelectedContentId }) => {
+  const [tree, setTree] = useState<TreeNode>(treeViewData);
+  const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
+  const [selectedParent, setSelectedParent] = useState<TreeNode | null>(null);
+  const navigate = useRouter();
 
-const TreeView = () => {
-    const treeData: TreeNode = {
-        name: "Root",
-        type: "folder",
-        isExpanded: true,
-        children: [
-            {
-                name: "Section 1",
-                type: "folder",
-                isExpanded: false,
-                children: [
-                    { name: "Page 1.1", type: "file", content: "..." },
-                    { name: "Page 1.2", type: "file", content: "..." },
-                ],
-            },
-            {
-                name: "Section 2",
-                type: "folder",
-                isExpanded: true,
-                children: [
-                    { name: "Page 2.1", type: "file", content: "..." },
-                    { name: "Page 2.2", type: "file", content: "..." },
-                ],
-            },
-        ],
+  const toggleExpand = (name: string) => {
+    const toggleNode = (node: TreeNode): TreeNode => {
+      if (node.name === name && node.type === "folder") {
+        return { ...node, isExpanded: !node.isExpanded };
+      }
+      if (node.children) {
+        return { ...node, children: node.children.map(toggleNode) };
+      }
+      return node;
     };
+    setTree(toggleNode(tree));
+  };
 
-    const [tree, setTree] = useState<TreeNode>(treeData);
+  const selectFile = (node: TreeNode, parentNode?: TreeNode | null) => {
+    if (node.type === "file") {
+      setSelectedFile(node);
+      setSelectedParent(parentNode || null);
+      setSelectedParent(parentNode || null);
+      setSelectedContentId(parentNode?.id || null);
 
-    const toggleExpand = (name: string) => {
-        const toggleNode = (node: TreeNode): TreeNode => {
-            if (node.name === name && node.type === "folder") {
-                return { ...node, isExpanded: !node.isExpanded };
-            }
-            if (node.children) {
-                return { ...node, children: node.children.map(toggleNode) };
-            }
-            return node;
-        };
+      console.log("selected node", node);
+      console.log("selected parent node", parentNode);
 
-        setTree(toggleNode(tree));
-    };
+      // Change route
+      const parentName = parentNode?.name || "root";
+      const parentId = parentNode?.id || "0";
+      navigate.push(`/edit/${parentName}/${parentId}`);
+    }
+  };
 
-    const selectFile = (node: TreeNode) => {
-        console.log("Selected File:", node);
-    };
+  const renderTreeWithState = (
+    node: TreeNode,
+    parentNode: TreeNode | null = null
+  ) => {
+    return renderTree({
+      node,
+      parentNode,
+      toggleExpand,
+      selectFile,
+      selectedFile,
+      selectedParent,
+    });
+  };
 
-    return (
-        <div className="file-tree">
-            {renderTree({ node: tree, toggleExpand, selectFile })}
-        </div>
-    );
-}
+  return <div className="file-tree">{renderTreeWithState(tree, null)}</div>;
+};
 
-export default TreeView
+export default TreeView;

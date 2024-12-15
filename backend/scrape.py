@@ -78,3 +78,69 @@ def get_scraped_data(current_user):
         # Log the exception (use logging in production)
         print(f"Error in get_scraped_data: {e}")
         return jsonify({'error': 'An error while getting the scapped data ', 'details': str(e)}), 500
+    
+def get_scraped_data_by_id(current_user, scraped_data_id):
+    try:
+        user_id = current_user.id
+
+        if not user_id:
+            return jsonify({"status": "error", "message": "user_id is required"}), 400
+
+        # Fetch the user and their team ID
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+
+        # Fetch the scraped data by ID and ensure the team ID matches
+        scraped_data = ScrapedData.query.filter_by(id=scraped_data_id, team_id=user.team_id).first()
+        if not scraped_data:
+            return jsonify({"status": "error", "message": "Scraped data not found or access denied"}), 404
+
+        # Prepare the response
+        data = {
+            "id": scraped_data.id,
+            "url": scraped_data.url,
+            "content": scraped_data.content,
+            "created_at": scraped_data.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        return jsonify({"status": "success", "data": data}), 200
+
+    except Exception as e:
+        # Log the exception (use logging in production)
+        print(f"Error in get_scraped_data_by_id: {e}")
+        return jsonify({'status': 'error', 'message': 'An error occurred', 'details': str(e)}), 500
+
+def update_scraped_data_by_id(current_user, scraped_data_id):
+    try:
+        user_id = current_user.id
+
+        if not user_id:
+            return jsonify({"status": "error", "message": "user_id is required"}), 400
+
+        # Fetch the user and their team ID
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"status": "error", "message": "User not found"}), 404
+
+        # Fetch the scraped data by ID and ensure the team ID matches
+        scraped_data = ScrapedData.query.filter_by(id=scraped_data_id, team_id=user.team_id).first()
+        if not scraped_data:
+            return jsonify({"status": "error", "message": "Scraped data not found or access denied"}), 404
+
+        # Extract the updated content from the request
+        data = request.json
+        updated_content = data.get("content")
+        if not updated_content:
+            return jsonify({"status": "error", "message": "Updated content is required"}), 400
+
+        # Update the scraped data
+        scraped_data.content = updated_content
+        db.session.commit()
+
+        return jsonify({"status": "success", "message": "Scraped data updated successfully"}), 200
+
+    except Exception as e:
+        # Log the exception (use logging in production)
+        print(f"Error in update_scraped_data_by_id: {e}")
+        return jsonify({'status': 'error', 'message': 'An error occurred', 'details': str(e)}), 500
