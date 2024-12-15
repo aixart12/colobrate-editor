@@ -51,6 +51,7 @@ def get_scraped_data_by_id_route(current_user  , scraped_data_id):
 
 
 @app.route('/api/scraped-data/<int:scraped_data_id>', methods=['PUT'])
+@token_required
 def update_scraped_data_route(current_user , scraped_data_id):
     return update_scraped_data_by_id(current_user, scraped_data_id)
 

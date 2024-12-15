@@ -14,6 +14,7 @@
     "@tiptap/react": "^2.10.3",
     "@tiptap/starter-kit": "^2.10.3",
     "axios": "^1.7.9",
+    "lodash": "^4.17.21",
     "next": "14.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -22,6 +23,7 @@
     "yup": "^1.5.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

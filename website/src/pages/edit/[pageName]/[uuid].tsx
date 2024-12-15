@@ -76,7 +76,7 @@ const EditContent = () => {
             )}
           </div>
           <div className="text-center col-span-5 border border-red-600">
-            <Tiptap content={selectedContent} />
+            <Tiptap content={selectedContent} contentId={selectedContentId} />
           </div>
         </div>
       </div>
