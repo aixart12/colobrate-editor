@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt \
 COPY . .
 
 # Initialize Flask-Migrate
+RUN flask db migrate || true
+
+
 RUN flask db upgrade || true
 
 # Make port 5000 available to the world outside this container

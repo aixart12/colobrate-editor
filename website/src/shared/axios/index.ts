@@ -2,7 +2,9 @@ import { getAccessToken } from "@/utils";
 import axios from "axios";
 
 // Base URL for API
-const baseURL = process.env.API_URL || "http://localhost:5000/api"; // Fallback for development
+const baseURL = process.env.NEXT_PUBLIC_API_URL // Fallback for development
+
+console.log('base url ' , baseURL)
 
 // Create Axios instance
 const axiosInstance = axios.create({

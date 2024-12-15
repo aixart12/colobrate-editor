@@ -20,12 +20,12 @@ services:
       context: ./website
       dockerfile: Dockerfile
       args:
-        API_URL: ${API_URL}
-        SOCKET_URL: ${SOCKET_URL}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL}
     container_name: website
     environment:
-      - SOCKET_URL=${SOCKET_URL}
-      - API_URL=${API_URL}
+      - NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     expose:
       - "3000:3000"
     env_file:
