@@ -1,9 +1,12 @@
-import React from 'react'
+import WorksapceForm from "@/components/workspaceForm/WorksapceForm";
+import React from "react";
 
 const Workspace = () => {
-    return (
-        <div>Workspace</div>
-    )
-}
+  return (
+    <div>
+      <WorksapceForm />
+    </div>
+  );
+};
 
-export default Workspace
+export default Workspace;

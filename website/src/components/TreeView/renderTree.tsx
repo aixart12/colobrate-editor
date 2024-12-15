@@ -31,7 +31,7 @@ export const renderTree = ({
 
   if (node.type === "folder") {
     return (
-      <div key={node.name} className="ml-4 folder">
+      <div key={node.name + "-" + node.id} className="ml-4 folder">
         <div
           onClick={() => toggleExpand(node.name)}
           className="cursor-pointer font-semibold flex items-center space-x-2 hover:text-blue-600"
@@ -59,7 +59,7 @@ export const renderTree = ({
   } else if (node.type === "file") {
     return (
       <div
-        key={node.name}
+        key={node.name + "-" + node.id}
         onClick={() => selectFile(node, parentNode)}
         className="ml-6 cursor-pointer file text-gray-700 hover:text-blue-600"
         style={nodeStyle}

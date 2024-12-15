@@ -11,6 +11,7 @@ const TreeView: FunctionComponent<{
   treeViewData: TreeNode;
   setSelectedContentId: Dispatch<SetStateAction<number | null>>;
 }> = ({ treeViewData, setSelectedContentId }) => {
+  console.log("data of the tree view", treeViewData);
   const [tree, setTree] = useState<TreeNode>(treeViewData);
   const [selectedFile, setSelectedFile] = useState<TreeNode | null>(null);
   const [selectedParent, setSelectedParent] = useState<TreeNode | null>(null);

@@ -1,7 +1,9 @@
 import requests
-from flask import Flask, request, jsonify
+from flask import  request, jsonify
 from bs4 import BeautifulSoup
 from models import User, ScrapedData
+from urllib.parse import urlparse
+from slugify import slugify
 from init import db , cache
 
 def scrape_and_save_data(current_user):
@@ -13,17 +15,27 @@ def scrape_and_save_data(current_user):
     if not user_id or not url:
         return jsonify({"status": "error", "message": "user_id and url are required"}), 400
 
-
     # Get the team_id of the logged-in user
     team_id = current_user.team_id
     if not team_id:
         return jsonify({'message': 'No team associated with your account'}), 400
-    
+
     # Perform web scraping
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Try to extract the title of the page
+        title = soup.title.get_text(strip=True) if soup.title else None
+
+        # If no title is found, fallback to the last part of the URL
+        if not title:
+            parsed_url = urlparse(url)
+            title = parsed_url.path.strip('/').split('/')[-1]
+
+        # Ensure the title is in slug format (lowercase, hyphenated)
+        title = slugify(title)
 
         # Extract specific content from the website (e.g., headings and paragraphs)
         content = {
@@ -35,15 +47,30 @@ def scrape_and_save_data(current_user):
         content_str = str(content)
 
         # Save the scraped data associated with the user's team
-        scraped_data = ScrapedData(team_id=team_id, url=url, content=content_str)
+        scraped_data = ScrapedData(
+            team_id=team_id,
+            url=url,
+            title=title,  # Save the slugified title
+            content=content_str
+        )
         db.session.add(scraped_data)
         db.session.commit()
 
-        return jsonify({"status": "success", "message": "Scraped data saved successfully"}), 201
+        # Return the scraped data in the response
+        return jsonify({
+            "status": "success",
+            "message": "Scraped data saved successfully",
+            "data": {
+                "id": scraped_data.id,
+                "team_id": scraped_data.team_id,
+                "url": scraped_data.url,
+                "title": scraped_data.title,
+                "content": scraped_data.content
+            }
+        }), 201
 
     except requests.exceptions.RequestException as e:
         return jsonify({"status": "error", "message": f"Failed to scrape the website: {str(e)}"}), 500
-
 
 def get_scraped_data(current_user):
     try:
@@ -72,6 +99,7 @@ def get_scraped_data(current_user):
                 "id": item.id,
                 "url": item.url,
                 "content": item.content,
+                "title": item.title,
                 "created_at": item.created_at.strftime("%Y-%m-%d %H:%M:%S")
             }
             for item in scraped_data
@@ -110,6 +138,7 @@ def get_scraped_data_by_id(current_user, scraped_data_id):
             "id": scraped_data.id,
             "url": scraped_data.url,
             "content": scraped_data.content,
+            "title": scraped_data.title,
             "created_at": scraped_data.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
 

@@ -27,6 +27,7 @@ class ScrapedData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_id = db.Column(db.String(36), nullable=False)  # Associate data with a team
     url = db.Column(db.String(500), nullable=False)     # URL of the scraped website
+    title = db.Column(db.String(200), nullable=True)   # Store the scraped page title
     content = db.Column(db.Text, nullable=False)        # Store the scraped content
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
