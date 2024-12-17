@@ -27,7 +27,7 @@ export const getScrapedDataByID = async (id: number) => {
     const response = await axiosInstance.get(
       SCRAPE_APIS.GET_SCRAPED_DATA_BY_ID(id)
     );
-    return response.data;
+    return response;
   } catch (e) {
     throw new Error("unable to get scrape data by Id ");
   }

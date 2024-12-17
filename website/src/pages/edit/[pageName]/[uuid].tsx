@@ -14,41 +14,51 @@ const EditContent = () => {
     null
   );
 
-  // Function to fetch scraped data
   const fetchScrapedData = async () => {
     try {
-      const data = await getScrapedData();
+      const response = await getScrapedData();
+      let data = response.data;
 
-      console.log("data point 1", data.data);
+      console.log("Raw data fetched:", data);
+
+      if (typeof data === "string") {
+        try {
+          data = JSON.parse(data); // Parse the string to JSON
+        } catch (e) {
+          throw new Error("Failed to parse data: Invalid JSON format");
+        }
+      }
+
+      if (!data || !Array.isArray(data)) {
+        throw new Error("Invalid data format: data must be an array");
+      }
 
       const updatedTreeData: TreeNode = {
         id: 0,
         name: "Pages",
         type: "folder",
         isExpanded: true,
-        children: data.data.map((url: any) => {
-          return {
-            id: url.id,
-            name: url.title ?? `random-${url.id}`,
-            type: "folder",
-            isExpanded: false,
-            children: [
-              {
-                id: 1,
-                name: "content",
-                type: "file",
-                content: url.content || "...", // Ensure content is correctly set
-              },
-            ],
-          };
-        }),
+        children: data.map((url: any) => ({
+          id: url.id,
+          name: url.title ?? `random-${url.id}`,
+          type: "folder",
+          isExpanded: false,
+          children: [
+            {
+              id: 1,
+              name: "content",
+              type: "file",
+              content: url.content || "...",
+            },
+          ],
+        })),
       };
-      console.log("data point 2", data);
 
-      setAllScrapedData(data.data); // Store scraped data
-      setTreeData(updatedTreeData); // Set tree data after fetching
+      setAllScrapedData(data);
+      setTreeData(updatedTreeData);
     } catch (e: any) {
-      setError(e.message); // Handle any errors
+      console.error("Error fetching data:", e.message);
+      setError(e.message);
     }
   };
 

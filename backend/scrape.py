@@ -1,10 +1,10 @@
-import requests
+import requests ,json
 from flask import  request, jsonify
 from bs4 import BeautifulSoup
 from models import User, ScrapedData
 from urllib.parse import urlparse
 from slugify import slugify
-from init import db , cache
+from init import db , cache 
 
 def scrape_and_save_data(current_user):
     # Extract the user ID and URL from the request
@@ -79,11 +79,11 @@ def get_scraped_data(current_user):
         if not user_id:
             return jsonify({"status": "error", "message": "user_id is required"}), 400
 
-        # Check Redis cache for the scraped data
+       # Decode and parse JSON data from cache
         cached_data = cache.get(f"scraped_data_{user_id}")
         if cached_data:
             print("Cache hit for scraped data.")
-            return jsonify({"status": "success", "data": cached_data.decode('utf-8')}), 200
+            return jsonify({"status": "success", "data": json.loads(cached_data)}), 200
 
         # If not in cache, fetch from the database
         user = User.query.filter_by(id=user_id).first()
@@ -106,7 +106,7 @@ def get_scraped_data(current_user):
         ]
 
         # Cache the result for future use (e.g., cache for 10 minutes)
-        cache.setex(f"scraped_data_{user_id}", 600, str(data))  # 600 seconds = 10 minutes
+        cache.setex(f"scraped_data_{user_id}", 600, json.dumps(data))  # 600 seconds = 10 minutes
 
         print("Cache miss for scraped data.")
         return jsonify({"status": "success", "data": data}), 200
